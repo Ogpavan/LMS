@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Timer, Play, Search } from "lucide-react";
+import { Pencil, Trash, Plus, Timer, Play, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-// Lazy image loader with fade-in
+// Lazy image loader with fade-in (copied from Courses page)
 function LazyImage({ src, alt, className }) {
   const [loaded, setLoaded] = useState(false);
   return (
@@ -24,10 +25,7 @@ function LazyImage({ src, alt, className }) {
   );
 }
 
-// Skeleton card component
-// ...existing code...
-
-// Skeleton card component
+// Skeleton card (copied from Courses page)
 const SkeletonCard = () => (
   <div className="min-h-[340px] h-full w-full bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm flex flex-col">
     {/* Image skeleton with badge and timer */}
@@ -57,12 +55,10 @@ const SkeletonCard = () => (
     </div>
   </div>
 );
-// ...existing
-export default function Courses() {
-  const [search, setSearch] = useState("");
+
+function ManageCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const scrollRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -88,133 +84,56 @@ export default function Courses() {
     fetchCourses();
   }, []);
 
-  const filteredCourses = courses.filter(
-    (course) =>
-      course.title?.toLowerCase().includes(search.toLowerCase()) ||
-      course.instructor?.toLowerCase().includes(search.toLowerCase()) ||
-      course.description?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
-    }
-  };
-  const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    }
+  const handleEdit = (id) => {
+    router.push(`/managecourses/upload?id=${id}`);
   };
 
-  const handleCourseClick = (id) => {
-    router.push(`/courses/${id}`);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+    try {
+      const res = await fetch(`/api/course/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setCourses((prev) => prev.filter((c) => c.id !== id));
+      }
+    } catch {}
+  };
+
+  const handleUpload = () => {
+    router.push("/managecourses/upload");
   };
 
   return (
     <div
-      className="min-h-screen dark:bg-gray-900 bg-gray-50 page-transition  "
+      className="min-h-screen dark:bg-gray-900 bg-gray-50 page-transition"
       style={{ width: "90vw" }}
     >
-      {/* Header */}
-      <div className="border-b border-gray-200/50 z-10 w-full">
-        <div className="py-6 flex items-center justify-between px-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1 dark:text-white">
-              Browse Courses
-            </h1>
-            <p className="text-gray-600 text-base font-light dark:text-white">
-              Discover workouts designed for every fitness level
-            </p>
-          </div>
-          <div className="relative w-80">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search courses..."
-              className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 text-gray-900 placeholder-gray-400 shadow focus:outline-none focus:ring-2 focus:ring-[#007aff] transition"
-            />
-            <Search
-              className="absolute left-4 top-3.5 text-gray-400"
-              size={18}
-            />
-          </div>
+      <div className="flex items-center justify-between px-6 py-6 border-b border-gray-200/50 mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight dark:text-white">
+            Manage Courses
+          </h1>
+          <span className="text-sm tracking-tight font-light text-gray-600 dark:text-gray-400">
+            Manage your courses effectively
+          </span>
         </div>
-
-        {/* Category scroll */}
-        <div className="flex items-center justify-between px-6 pb-3 backdrop-blur-xl border-b border-gray-200/50 text-xs relative max-w-full">
-          <button
-            onClick={scrollLeft}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-1 shadow hover:bg-gray-100 transition"
-            aria-label="Scroll left"
-            style={{ left: "8px" }}
-          >
-            <svg
-              width="18"
-              height="18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div
-            ref={scrollRef}
-            className="flex items-center gap-3 overflow-auto overflow-x-hidden px-8 pt-2"
-            style={{ scrollBehavior: "smooth" }}
-          >
-            {[
-              "All",
-              "Yoga",
-              "Strength",
-              "Cardio",
-              "Pilates",
-              "HIIT",
-              "Mobility",
-            ].map((cat) => (
-              <button
-                key={cat}
-                className="px-4 py-2 rounded-full border border-gray-200 text-gray-700 font-medium hover:border-blue-500 transition dark:text-white"
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={scrollRight}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full p-1 shadow hover:bg-gray-100 transition"
-            aria-label="Scroll right"
-            style={{ right: "8px" }}
-          >
-            <svg
-              width="18"
-              height="18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
+        <Button
+          onClick={handleUpload}
+          className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-full  shadow hover:bg-blue-700 transition"
+        >
+          <Plus size={18} /> Upload Course
+        </Button>
       </div>
-
-      {/* Main Content */}
-      <main className="px-6 py-12  w-full">
+      <main className="px-6  flex-1 w-full">
         <div className="max-w-screen-xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {loading
               ? Array.from({ length: 6 }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))
-              : filteredCourses.map((course, idx) => (
+              : courses.map((course, idx) => (
                   <div
                     key={course.id || idx}
-                    className="group bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:scale-[1.02] cursor-pointer dark:bg-gray-900 border dark:border-gray-800 flex flex-col h-full min-h-[340px]"
-                    onClick={() => handleCourseClick(course.id)}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:scale-[1.02] dark:bg-gray-900 border dark:border-gray-800 flex flex-col h-full min-h-[340px] relative cursor-pointer"
                   >
                     <div className="relative w-full aspect-video overflow-hidden">
                       <LazyImage
@@ -240,12 +159,28 @@ export default function Courses() {
                           />
                         </div>
                       </div>
+                      {/* Edit/Delete buttons */}
+                      <div className="absolute top-4 right-4 flex gap-2 z-10">
+                        <button
+                          onClick={() => handleEdit(course.id)}
+                          className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800"
+                          title="Edit"
+                        >
+                          <Pencil size={16} className="text-blue-600" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(course.id)}
+                          className="p-2 rounded-full bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+                          title="Delete"
+                        >
+                          <Trash size={16} className="text-red-600" />
+                        </button>
+                      </div>
                     </div>
-
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <h2 className="text-lg font-semibold tracking-tight text-gray-900 leading-normal dark:text-white">
+                          <h2 className="text-lg font-semibold tracking-tight text-gray-900 line-clamp-2 dark:text-white">
                             {course.title}
                           </h2>
                           <div className="flex items-center gap-1">
@@ -273,12 +208,9 @@ export default function Courses() {
                   </div>
                 ))}
           </div>
-
-          {!loading && (
-            <div className="flex justify-center mt-16">
-              <button className="bg-gray-900 text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors duration-200 shadow-lg hover:shadow-xl">
-                Load More Courses
-              </button>
+          {!loading && courses.length === 0 && (
+            <div className="text-center text-gray-500 mt-16 dark:text-gray-400">
+              No courses found.
             </div>
           )}
         </div>
@@ -286,3 +218,5 @@ export default function Courses() {
     </div>
   );
 }
+
+export default ManageCourses;

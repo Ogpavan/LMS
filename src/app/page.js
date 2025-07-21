@@ -1,7 +1,5 @@
-import React from "react";
+import Dashboard from "./dashboard/page";
 
-function page() {
-  return <div></div>;
+export default function Page() {
+  return <Dashboard />;
 }
-
-export default page;
