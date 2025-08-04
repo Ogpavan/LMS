@@ -29,35 +29,31 @@ function LazyImage({ src, alt, className }) {
 
 // Skeleton card component
 const SkeletonCard = () => (
-  <div className="min-h-[340px] h-full w-full bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+  <div className="min-h-[220px] h-full w-full bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-sm flex flex-col">
     {/* Image skeleton with badge and timer */}
-    <div className="relative w-full aspect-video bg-gray-200 dark:bg-gray-800 animate-pulse">
-      {/* Level badge */}
-
-      {/* Play button overlay */}
-    </div>
+    <div className="relative w-full aspect-[16/7] bg-gray-200 dark:bg-gray-800 animate-pulse" />
     {/* Card content */}
-    <div className="p-5 flex-1 flex flex-col justify-between">
+    <div className="p-3 flex-1 flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-1">
-          <div className="bg-gray-300 h-5 w-3/4 rounded" />
+          <div className="bg-gray-300 h-4 w-2/3 rounded" />
           <div className="flex items-center gap-1">
-            <div className="bg-yellow-200 h-4 w-4 rounded-full" />
-            <div className="bg-gray-300 h-4 w-6 rounded" />
+            <div className="bg-yellow-200 h-3 w-3 rounded-full" />
+            <div className="bg-gray-300 h-3 w-5 rounded" />
           </div>
         </div>
         <div className="flex items-center gap-2 mb-2">
-          <div className="bg-gray-300 h-4 w-1/3 rounded" />
+          <div className="bg-gray-300 h-3 w-1/4 rounded" />
         </div>
       </div>
       <div className="mt-2">
-        <div className="bg-gray-300 h-3 w-full rounded mb-1" />
-        <div className="bg-gray-300 h-3 w-5/6 rounded" />
+        <div className="bg-gray-300 h-2 w-full rounded mb-1" />
+        <div className="bg-gray-300 h-2 w-4/5 rounded" />
       </div>
     </div>
   </div>
 );
-// ...existing
+
 export default function Courses() {
   const [search, setSearch] = useState("");
   const [courses, setCourses] = useState([]);
@@ -70,9 +66,8 @@ export default function Courses() {
       setLoading(true);
       try {
         const res = await fetch("/api/course", {
-          method: "POST",
+          method: "GET",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fetchAll: true }),
         });
         const data = await res.json();
         if (data.success && Array.isArray(data.courses)) {
@@ -112,7 +107,7 @@ export default function Courses() {
 
   return (
     <div
-      className="min-h-screen dark:bg-gray-900 bg-gray-50 page-transition  "
+      className="min-h-screen dark:bg-gray-900 bg-gray-50 page-transition"
       style={{ width: "90vw" }}
     >
       {/* Header */}
@@ -203,38 +198,38 @@ export default function Courses() {
       </div>
 
       {/* Main Content */}
-      <main className="px-6 py-12  w-full">
+      <main className="px-6 py-8 w-full">
         <div className="max-w-screen-xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {loading
-              ? Array.from({ length: 6 }).map((_, i) => (
+              ? Array.from({ length: 8 }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))
               : filteredCourses.map((course, idx) => (
                   <div
                     key={course.id || idx}
-                    className="group bg-white rounded-2xl overflow-hidden shadow-sm transition-all duration-300 hover:scale-[1.02] cursor-pointer dark:bg-gray-900 border dark:border-gray-800 flex flex-col h-full min-h-[340px]"
+                    className="group bg-white rounded-xl overflow-hidden shadow-sm transition-all duration-300 cursor-pointer dark:bg-gray-900 border dark:border-gray-800 flex flex-col h-full min-h-[220px]"
                     onClick={() => handleCourseClick(course.id)}
                   >
-                    <div className="relative w-full aspect-video overflow-hidden">
+                    <div className="relative w-full  overflow-hidden">
                       <LazyImage
-                        src={course.image_url || course.image}
+                        src={course.thumbnail}
                         alt={course.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-white/90 backdrop-blur-sm text-gray-700 px-3 py-1 rounded-full text-xs font-semibold shadow">
+                      <div className="absolute top-2 left-2">
+                        <span className="bg-white/90 backdrop-blur-sm text-gray-700 px-2 py-0.5 rounded-full text-[10px] font-semibold shadow">
                           {course.level}
                         </span>
                       </div>
-                      <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium shadow">
-                        <Timer size={14} className="text-gray-700" />
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-medium shadow">
+                        <Timer size={11} className="text-gray-700" />
                         <span className="text-gray-700">{course.duration}</span>
                       </div>
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="bg-white/90 backdrop-blur-sm rounded-full p-4 shadow-lg">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
                           <Play
-                            size={24}
+                            size={16}
                             className="text-gray-900 ml-1"
                             fill="currentColor"
                           />
@@ -242,30 +237,30 @@ export default function Courses() {
                       </div>
                     </div>
 
-                    <div className="p-5 flex-1 flex flex-col justify-between">
+                    <div className="p-3 flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between mb-1">
-                          <h2 className="text-lg font-semibold tracking-tight text-gray-900 leading-normal dark:text-white">
+                          <h2 className="text-sm font-semibold tracking-tight text-gray-900 leading-snug dark:text-white line-clamp-2">
                             {course.title}
                           </h2>
                           <div className="flex items-center gap-1">
                             <Star
-                              size={16}
+                              size={13}
                               className="text-yellow-500 fill-yellow-500"
                             />
-                            <span className="text-gray-900 dark:text-white font-semibold text-sm">
+                            <span className="text-gray-900 dark:text-white font-semibold text-xs">
                               {course.rating || "--"}
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-gray-600 font-light text-sm tracking-tight dark:text-white">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-gray-600 font-light text-xs tracking-tight dark:text-white">
                             {course.instructor}
                           </span>
                         </div>
                       </div>
-                      <div className="mt-2">
-                        <span className="text-gray-700 text-xs font-light tracking-tight line-clamp-2 dark:text-white">
+                      <div className="mt-1">
+                        <span className="text-gray-700 text-[11px] font-light tracking-tight line-clamp-2 dark:text-white">
                           {course.description}
                         </span>
                       </div>
@@ -275,8 +270,8 @@ export default function Courses() {
           </div>
 
           {!loading && (
-            <div className="flex justify-center mt-16">
-              <button className="bg-gray-900 text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors duration-200 shadow-lg hover:shadow-xl">
+            <div className="flex justify-center mt-10">
+              <button className="bg-gray-900 text-white px-6 py-2 rounded-full font-medium text-sm hover:bg-gray-800 transition-colors duration-200 shadow-lg hover:shadow-xl">
                 Load More Courses
               </button>
             </div>

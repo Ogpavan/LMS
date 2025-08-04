@@ -1,137 +1,55 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { PrismaClient } from "@prisma/client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const prisma = new PrismaClient();
 
+// POST: Create and publish a new course
 export async function POST(req) {
   try {
     const body = await req.json();
-
-    // Fetch all courses
-    if (body.fetchAll) {
-      const { data: courses, error } = await supabase
-        .from("courses")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 500 }
-        );
-      }
-      return NextResponse.json({ success: true, courses });
-    }
-
-    // Fetch a single course by id with chapters
-    if (body.getById) {
-      // Fetch course
-      const { data: course, error: courseError } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("id", body.getById)
-        .single();
-
-      if (courseError || !course) {
-        return NextResponse.json(
-          { success: false, error: courseError?.message || "Course not found" },
-          { status: 404 }
-        );
-      }
-
-      // Fetch chapters for this course
-      const { data: chapters, error: chaptersError } = await supabase
-        .from("chapters")
-        .select("*")
-        .eq("course_id", body.getById)
-        .order("position", { ascending: true });
-
-      if (chaptersError) {
-        return NextResponse.json(
-          { success: false, error: chaptersError.message },
-          { status: 500 }
-        );
-      }
-
-      // Attach chapters to course
-      course.chapters = chapters || [];
-
-      return NextResponse.json({ success: true, course });
-    }
-
-    // Otherwise, create a new course
     const {
       title,
       description,
       instructor,
-      duration,
       level,
-      image,
+      thumbnail,
       chapters = [],
-      created_by,
-      created_by_email,
+      status,
+      userId, // <-- make sure you get this from the request
     } = body;
 
-    // Validate required fields for course creation
-    if (!title || !description || !instructor || !duration || !level) {
+    if (!title || !description || !instructor || !level || !userId) {
       return NextResponse.json(
         { success: false, error: "Missing required course fields." },
         { status: 400 }
       );
     }
 
-    // Insert course
-    const { data: course, error: courseError } = await supabase
-      .from("courses")
-      .insert([
-        {
-          title,
-          description,
-          instructor,
-          duration,
-          level,
-          image_url: image,
-          created_by,
-          created_by_email,
-        },
-      ])
-      .select()
-      .single();
+    const courseData = {
+      title,
+      description,
+      instructor,
+      level,
+      thumbnail,
+      status,
+      userId, // <-- add this line
+      chapters: {
+        create: chapters.map((ch, idx) => ({
+          title: ch.title,
+          summary: ch.summary,
+          videoUrl: ch.videoUrl,
+          duration: ch.duration,
+          position: idx + 1,
+        })),
+      },
+    };
 
-    if (courseError) {
-      return NextResponse.json(
-        { success: false, error: courseError.message },
-        { status: 400 }
-      );
-    }
+    const course = await prisma.course.create({
+      data: courseData,
+      include: { chapters: true },
+    });
 
-    // Insert chapters (if any)
-    if (chapters.length > 0) {
-      const chaptersToInsert = chapters.map((ch, idx) => ({
-        course_id: course.id,
-        title: ch.title,
-        summary: ch.summary,
-        video_url: ch.videoUrl,
-        duration: ch.duration,
-        position: idx + 1,
-      }));
-
-      const { error: chaptersError } = await supabase
-        .from("chapters")
-        .insert(chaptersToInsert);
-
-      if (chaptersError) {
-        return NextResponse.json(
-          { success: false, error: chaptersError.message },
-          { status: 400 }
-        );
-      }
-    }
-
-    return NextResponse.json({ success: true, courseId: course.id });
+    return NextResponse.json({ success: true, course });
   } catch (err) {
     return NextResponse.json(
       { success: false, error: err.message },
@@ -140,36 +58,101 @@ export async function POST(req) {
   }
 }
 
-export async function PATCH(req) {
+// GET: Get all courses with chapters
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (id) {
+    // Get single course by id
+    const course = await prisma.course.findUnique({
+      where: { id: Number(id) },
+      include: { chapters: true },
+    });
+    if (!course) {
+      return NextResponse.json(
+        { success: false, error: "Course not found" },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json({ success: true, course });
+  }
+  try {
+    const courses = await prisma.course.findMany({
+      where: {
+        isActive: true,
+        status: "published", // Only show published courses
+      },
+      include: {
+        chapters: { orderBy: { position: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json({ success: true, courses });
+  } catch (err) {
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status: 500 }
+    );
+  }
+}
+
+// POST: Get all courses for a specific userId
+
+// PUT: Update an existing course
+export async function PUT(req) {
   try {
     const body = await req.json();
-    const { courseId, isPublished } = body;
+    const {
+      id,
+      title,
+      description,
+      instructor,
+      level,
+      thumbnail,
+      chapters = [],
+      status,
+    } = body;
 
-    // Validate required fields
-    if (!courseId || typeof isPublished !== "boolean") {
+    if (!id || !title || !description || !instructor || !level) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields or invalid data." },
+        { success: false, error: "Missing required fields." },
         { status: 400 }
       );
     }
 
-    // Update the isPublished column for the specified course
-    const { error } = await supabase
-      .from("courses")
-      .update({ isPublished })
-      .eq("id", courseId);
-
-    if (error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Course updated successfully.",
+    // Update the course
+    const updatedCourse = await prisma.course.update({
+      where: { id: Number(id) },
+      data: {
+        title,
+        description,
+        instructor,
+        level,
+        thumbnail,
+        status,
+      },
     });
+
+    // Delete existing chapters and recreate (simple approach)
+    await prisma.chapter.deleteMany({ where: { courseId: Number(id) } });
+    await prisma.chapter.createMany({
+      data: chapters.map((ch, idx) => ({
+        courseId: Number(id),
+        title: ch.title,
+        summary: ch.summary,
+        videoUrl: ch.videoUrl,
+        duration: ch.duration,
+        position: idx + 1,
+      })),
+    });
+
+    // Return updated course with chapters
+    const courseWithChapters = await prisma.course.findUnique({
+      where: { id: Number(id) },
+      include: { chapters: true },
+    });
+
+    return NextResponse.json({ success: true, course: courseWithChapters });
   } catch (err) {
     return NextResponse.json(
       { success: false, error: err.message },

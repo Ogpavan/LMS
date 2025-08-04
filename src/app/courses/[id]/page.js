@@ -20,10 +20,9 @@ import Loader from "@/components/Loader"; // Add this at the top with your other
 
 // Fetch course by id from API
 async function getCourseById(id) {
-  const res = await fetch("/api/course", {
-    method: "POST",
+  const res = await fetch(`/api/course?id=${id}`, {
+    method: "GET",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ getById: id }),
   });
   const data = await res.json();
   if (data.success && data.course) return data.course;
@@ -75,6 +74,12 @@ export default function CourseDetails() {
           <p className="mt-2 text-gray-600 tracking-tight">
             The course you're looking for doesn't exist.
           </p>
+          <button
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => router.push("/courses")}
+          >
+            Go back to courses
+          </button>
         </div>
       </div>
     );
@@ -173,7 +178,7 @@ export default function CourseDetails() {
           <div className="relative">
             <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src={course.image_url || course.image}
+                src={course.thumbnail} // Use the Cloudinary image URL saved in your DB
                 alt={course.title}
                 className="w-full h-full object-cover"
               />

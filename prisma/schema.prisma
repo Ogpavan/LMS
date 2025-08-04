@@ -1,0 +1,92 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id             Int          @id @default(autoincrement())
+    name           String?
+    username       String       @unique
+    email          String       @unique
+    password       String?
+    emailVerified  Boolean      @default(false)
+    mobile         String?
+    mobileVerified Boolean      @default(false)
+    gender         String?
+    image          String?
+    isActive       Boolean      @default(true)
+    role           String       @default("user")
+    status         String       @default("active")
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+    Enrollment     Enrollment[]
+}
+
+enum Role {
+    USER
+    ADMIN
+    INSTRUCTOR
+}
+
+model Course {
+    id          Int          @id @default(autoincrement())
+    title       String
+    description String
+    instructor  String
+    level       String?
+    thumbnail   String?
+    userId      String
+    status      String       @default("draft")
+    isActive    Boolean      @default(true)
+    chapters    Chapter[]
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    Enrollment  Enrollment[]
+}
+
+model Chapter {
+    id        Int      @id @default(autoincrement())
+    title     String
+    summary   String
+    videoUrl  String
+    duration  String
+    position  Int
+    course    Course   @relation(fields: [courseId], references: [id])
+    courseId  Int
+    createdAt DateTime @default(now())
+}
+
+model Enrollment {
+    id        Int        @id @default(autoincrement())
+    user      User       @relation(fields: [userId], references: [id])
+    userId    Int
+    course    Course     @relation(fields: [courseId], references: [id])
+    courseId  Int
+    createdAt DateTime   @default(now())
+    progress  Progress[]
+}
+
+model Progress {
+    id           Int        @id @default(autoincrement())
+    enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+    enrollmentId Int
+    chapterId    Int
+    completed    Boolean    @default(false)
+    completedAt  DateTime?
+}
+
+model Otp {
+    id        Int      @id @default(autoincrement())
+    email     String   @unique
+    username  String
+    password  String
+    role      String
+    mobile    String
+    gender    String
+    otpHash   String
+    createdAt DateTime @default(now())
+}

@@ -60,10 +60,9 @@ export default function LearnPage() {
     setLoading(true);
     setError(null);
 
-    fetch("/api/course", {
-      method: "POST",
+    fetch(`/api/course?id=${courseId}`, {
+      method: "GET",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ getById: courseId }),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch course data");
@@ -188,7 +187,7 @@ export default function LearnPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 min-w-[90vw]">
       {/* Breadcrumb */}
       <div className="px-4 sm:px-8 pt-6 sm:pt-8 max-w-7xl mx-auto">
         <Breadcrumb className="text-sm">
@@ -280,7 +279,7 @@ export default function LearnPage() {
               <div className="aspect-video">
                 <iframe
                   ref={videoRef}
-                  src={chapters[current].video_url || chapters[current].video}
+                  src={chapters[current].videoUrl}
                   title={chapters[current].title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
