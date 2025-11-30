@@ -190,7 +190,7 @@ export default function LearnPage() {
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300 min-w-[90vw]">
       {/* Breadcrumb */}
       <div className="px-4 sm:px-8 pt-6 sm:pt-8 max-w-7xl mx-auto">
-        <Breadcrumb className="text-sm">
+        <Breadcrumb className="text-xs">
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink
@@ -237,27 +237,27 @@ export default function LearnPage() {
 
       {/* Header */}
       <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-4 sm:py-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight line-clamp-1">
+              <h1 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white tracking-tight line-clamp-1">
                 {courseTitle}
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+              <p className="text-gray-500 dark:text-gray-400 mt-1 text-xs">
                 Chapter {current + 1} of {chapters.length} -{" "}
                 {chapters[current]?.title}
               </p>
             </div>
-            <div className="flex items-center gap-4 sm:gap-6">
-              <div className="text-right flex items-center gap-x-3">
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="text-right flex items-center gap-x-2">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   Progress
                 </div>
-                <div className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">
+                <div className="text-base font-semibold text-gray-900 dark:text-white tracking-tight">
                   {progress}%
                 </div>
               </div>
-              <div className="w-24 sm:w-44 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div className="w-20 sm:w-36 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
                 <div
                   className={`h-full transition-all duration-700 ease-out ${
                     progress >= 100 ? "bg-green-500" : "bg-blue-500"
@@ -270,11 +270,11 @@ export default function LearnPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-8    ">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
           {/* Video Section */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-black rounded-2xl overflow-hidden shadow-2xl relative group">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-black rounded-xl overflow-hidden shadow-2xl relative group">
               {/* Video player */}
               <div className="aspect-video">
                 <iframe
@@ -286,9 +286,8 @@ export default function LearnPage() {
                   className="w-full h-full"
                 />
               </div>
-
               {/* Navigation buttons */}
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-3 opacity-0 group-hover:opacity-100 transition-opacity">
                 {current > 0 && (
                   <TooltipProvider>
                     <Tooltip>
@@ -329,19 +328,18 @@ export default function LearnPage() {
             </div>
 
             {/* Video Info */}
-            <div className="bg-gray-50 dark:bg-gray-800/40 rounded-2xl p-6 sm:p-8">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white tracking-tight mb-4">
+            <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-5 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white tracking-tight mb-3">
                 {chapters[current].title}
               </h2>
-
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                  <Clock size={18} />
+              <div className="flex flex-wrap items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs">
+                  <Clock size={16} />
                   <span>{chapters[current].duration} min</span>
                 </div>
                 <div className="text-gray-300 dark:text-gray-600">•</div>
-                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                  <BookOpen size={18} />
+                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs">
+                  <BookOpen size={16} />
                   <span>
                     Chapter {current + 1} of {chapters.length}
                   </span>
@@ -349,25 +347,23 @@ export default function LearnPage() {
                 {chapters[current].completed && (
                   <>
                     <div className="text-gray-300 dark:text-gray-600">•</div>
-                    <div className="flex items-center gap-2 text-green-600 dark:text-green-500">
-                      <CheckCircle size={18} />
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-500 text-xs">
+                      <CheckCircle size={16} />
                       <span>Completed</span>
                     </div>
                   </>
                 )}
               </div>
-
-              <div className="prose dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300">
+              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300">
                 {chapters[current].summary}
               </div>
-
               {!chapters[current].completed && (
-                <div className="mt-8 flex justify-end">
+                <div className="mt-6 flex justify-end">
                   <button
                     onClick={() => handleComplete(current)}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all font-medium flex items-center gap-2"
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center gap-2 text-sm"
                   >
-                    <CheckCircle size={18} />
+                    <CheckCircle size={16} />
                     Mark as Completed
                   </button>
                 </div>
@@ -375,33 +371,32 @@ export default function LearnPage() {
             </div>
 
             {/* Navigation buttons */}
-            <div className="flex justify-between pt-4">
+            <div className="flex justify-between pt-3">
               {current > 0 ? (
                 <button
                   onClick={goToPrevChapter}
-                  className="flex items-center gap-2 px-5 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors text-gray-700 dark:text-gray-300"
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-300 text-sm"
                 >
-                  <ChevronLeft size={18} />
+                  <ChevronLeft size={16} />
                   <span>Previous</span>
                 </button>
               ) : (
                 <div></div>
               )}
-
               {current < chapters.length - 1 ? (
                 <button
                   onClick={goToNextChapter}
-                  className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all text-sm"
                 >
                   <span>Next Chapter</span>
-                  <ChevronRight size={18} />
+                  <ChevronRight size={16} />
                 </button>
               ) : (
                 <button
                   onClick={() => router.push(`/courses/${courseId}`)}
-                  className="flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all text-sm"
                 >
-                  <Award size={18} />
+                  <Award size={16} />
                   <span>Complete Course</span>
                 </button>
               )}
@@ -410,22 +405,21 @@ export default function LearnPage() {
 
           {/* Chapters Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-50 dark:bg-gray-800/40 rounded-2xl p-6 sm:p-8 sticky top-24">
-              <div className="flex items-center gap-4 mb-6">
+            <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-5 sm:p-6 sticky top-24">
+              <div className="flex items-center gap-3 mb-5">
                 <BookOpen
-                  size={24}
+                  size={20}
                   className="text-blue-600 dark:text-blue-400"
                 />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">
                   Course Contents
                 </h3>
               </div>
-
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {chapters.map((chapter, idx) => (
                   <div
                     key={idx}
-                    className={`group relative rounded-xl p-4 cursor-pointer transition-all duration-200 border-2 ${
+                    className={`group relative rounded-lg p-3 cursor-pointer transition-all duration-200 border ${
                       current === idx
                         ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
                         : chapter.completed
@@ -434,31 +428,30 @@ export default function LearnPage() {
                     }`}
                     onClick={() => setCurrent(idx)}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2">
                       <div className="flex-shrink-0 mt-1">
                         {chapter.completed ? (
-                          <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
                             <CheckCircle
-                              size={18}
+                              size={14}
                               className="text-green-600 dark:text-green-500"
                             />
                           </div>
                         ) : current === idx ? (
-                          <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                             <Play
-                              size={16}
+                              size={12}
                               className="text-blue-600 dark:text-blue-400 ml-0.5"
                             />
                           </div>
                         ) : (
-                          <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600" />
+                          <div className="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600" />
                         )}
                       </div>
-
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <h4
-                            className={`text-sm font-medium tracking-tight leading-5 ${
+                            className={`text-xs font-medium tracking-tight leading-5 ${
                               current === idx
                                 ? "text-blue-600 dark:text-blue-400"
                                 : chapter.completed
@@ -471,12 +464,12 @@ export default function LearnPage() {
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                            <Clock size={12} />
+                            <Clock size={10} />
                             {chapter.duration} min
                           </span>
                           {!chapter.completed && (
                             <button
-                              className="opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-medium hover:bg-blue-700 transition-colors"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-0.5 bg-blue-600 text-white rounded-full text-xs font-medium hover:bg-blue-700 transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleComplete(idx);
@@ -491,19 +484,18 @@ export default function LearnPage() {
                   </div>
                 ))}
               </div>
-
               {/* Overall Progress */}
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                     Course Progress
                   </span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <span className="text-xs font-semibold text-gray-900 dark:text-white">
                     {chapters.filter((c) => c.completed).length} of{" "}
                     {chapters.length}
                   </span>
                 </div>
-                <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
                   <div
                     className={`h-full transition-all duration-700 ease-out ${
                       progress >= 100 ? "bg-green-500" : "bg-blue-500"
@@ -511,14 +503,13 @@ export default function LearnPage() {
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-
                 {progress === 100 && (
-                  <div className="mt-6 text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+                  <div className="mt-4 text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800">
                     <Award
-                      size={24}
-                      className="mx-auto mb-2 text-green-600 dark:text-green-500"
+                      size={18}
+                      className="mx-auto mb-1 text-green-600 dark:text-green-500"
                     />
-                    <p className="text-green-800 dark:text-green-400 font-medium">
+                    <p className="text-green-800 dark:text-green-400 font-medium text-xs">
                       Congratulations! You've completed this course.
                     </p>
                   </div>

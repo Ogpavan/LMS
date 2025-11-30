@@ -18,7 +18,7 @@ export async function POST(req) {
 
     const courses = await prisma.course.findMany({
       where: {
-        userId: userId,
+        userId: String(userId), // <-- convert to string
         isActive: true,
       },
       include: {

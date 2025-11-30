@@ -9,7 +9,11 @@ import { usePathname } from "next/navigation";
 export default function RootLayout({ children }) {
   const [collapsed, setCollapsed] = useState(true);
   const pathname = usePathname();
-  const hideSidebar = pathname === "/signin" || pathname === "/signup";
+  const hideSidebar =
+    pathname === "/signin" ||
+    pathname === "/signup" ||
+    pathname === "/verifyotp" ||
+    pathname === "/forgot-password";
 
   // Default: show sidebar and app shell
   return (

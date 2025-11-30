@@ -1,12 +1,16 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Zap } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function SigninPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    emailOrUsername: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +20,11 @@ export default function SigninPage() {
   // Simple validation functions
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePassword = (password) => password.length >= 6;
+  const validateEmailOrUsername = (value) =>
+    value &&
+    (value.includes("@")
+      ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+      : value.length >= 3);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,8 +32,8 @@ export default function SigninPage() {
   };
 
   const validateForm = () => {
-    if (!validateEmail(form.email)) {
-      setError("Please enter a valid email address.");
+    if (!validateEmailOrUsername(form.emailOrUsername)) {
+      setError("Please enter a valid email or username.");
       return false;
     }
     if (!validatePassword(form.password)) {
@@ -45,7 +54,10 @@ export default function SigninPage() {
       const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: JSON.stringify({
+          email: form.emailOrUsername,
+          password: form.password,
+        }),
       });
       const data = await res.json();
       if (data.success) {
@@ -61,11 +73,11 @@ export default function SigninPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-gray-200 absolute inset-0">
+    <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-gray-200 absolute inset-0 ">
       {/* Left Side - Form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
+      <div className="flex-1 flex items-center justify-center px-4 py-8 ">
         <form
-          className="w-full max-w-sm space-y-6 bg-white rounded-2xl p-8"
+          className="w-full max-w-sm space-y-6 bg-white rounded-2xl p-8 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] "
           onSubmit={handleSubmit}
           noValidate
         >
@@ -86,27 +98,30 @@ export default function SigninPage() {
             </div>
           )}
 
-          {/* Email Field */}
+          {/* Email or Username Field */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-gray-700">Email</label>
+            <label className="text-xs font-medium text-gray-700">
+              Email or Username
+            </label>
             <Input
-              name="email"
-              type="email"
-              placeholder="example@gmail.com"
-              value={form.email}
+              name="emailOrUsername"
+              type="text"
+              value={form.emailOrUsername}
               onChange={handleChange}
               className={
-                touched.email && !validateEmail(form.email)
+                touched.emailOrUsername &&
+                !validateEmailOrUsername(form.emailOrUsername)
                   ? "border-red-400"
                   : ""
               }
               required
             />
-            {touched.email && !validateEmail(form.email) && (
-              <span className="text-xs text-red-500">
-                Invalid email address.
-              </span>
-            )}
+            {touched.emailOrUsername &&
+              !validateEmailOrUsername(form.emailOrUsername) && (
+                <span className="text-xs text-red-500">
+                  Enter a valid email or username.
+                </span>
+              )}
           </div>
 
           {/* Password Field */}
@@ -126,7 +141,6 @@ export default function SigninPage() {
               <Input
                 name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
                 value={form.password}
                 onChange={handleChange}
                 className={
@@ -153,21 +167,6 @@ export default function SigninPage() {
                 Password must be at least 6 characters.
               </span>
             )}
-          </div>
-
-          {/* Terms Checkbox */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              className="h-4 w-4 text-blue-500 rounded focus:ring-blue-400 border-gray-300"
-              required
-            />
-            <label className="text-xs text-gray-500">
-              I agree to the{" "}
-              <a href="/terms" className="text-blue-500 hover:underline">
-                Terms & Privacy
-              </a>
-            </label>
           </div>
 
           {/* Submit Button */}

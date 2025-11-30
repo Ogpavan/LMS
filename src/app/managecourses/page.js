@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash, Plus, Timer, Play, Star } from "lucide-react";
+import { Pencil, Trash, Plus, Timer, Play, Star, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,10 +17,17 @@ import {
 // Lazy image loader with fade-in (copied from Courses page)
 function LazyImage({ src, alt, className }) {
   const [loaded, setLoaded] = useState(false);
+  const fallback =
+    "https://dummyimage.com/400x200/cccccc/ffffff.png&text=No+Image"; // Dummy image
+
   if (!src) {
     return (
       <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
-        <span className="text-gray-400 text-xs">No Image</span>
+        <img
+          src={fallback}
+          alt="No Image"
+          className={`w-full h-full object-cover rounded`}
+        />
       </div>
     );
   }
@@ -30,13 +37,17 @@ function LazyImage({ src, alt, className }) {
         <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse" />
       )}
       <img
-        src={src}
+        src={src || fallback}
         alt={alt}
         className={`${className} transition-opacity duration-700 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
         onLoad={() => setLoaded(true)}
         loading="lazy"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = fallback;
+        }}
       />
     </div>
   );
@@ -74,10 +85,27 @@ function ManageCourses() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [user, setUser] = useState(null);
   const router = useRouter();
-  const user = { id: "demo-user-id" }; // Replace with your own user logic
+
   useEffect(() => {
-    if (!user?.id) return;
+    // Example: get user from cookie
+    const userCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("user="));
+
+    if (userCookie) {
+      try {
+        setUser(JSON.parse(decodeURIComponent(userCookie.split("=")[1])));
+      } catch (e) {
+        setUser(null);
+      }
+    }
+  }, []);
+
+  // Replace with your own user logic
+  useEffect(() => {
+    // if (!user?.id) return;
     const fetchCourses = async () => {
       setLoading(true);
       try {
@@ -87,6 +115,7 @@ function ManageCourses() {
           body: JSON.stringify({ userId: user.id }),
         });
         const data = await res.json();
+        console.log(data);
         if (data.success && Array.isArray(data.courses)) {
           setCourses(data.courses);
         } else {
@@ -98,7 +127,7 @@ function ManageCourses() {
       setLoading(false);
     };
     fetchCourses();
-  }, [user?.id]);
+  }, [user]);
 
   const handleEdit = (id) => {
     router.push(`/managecourses/upload?id=${id}`);
@@ -148,12 +177,27 @@ function ManageCourses() {
             Manage your courses effectively
           </span>
         </div>
-        <Button
-          onClick={handleUpload}
-          className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-blue-700 transition text-sm"
-        >
-          <Plus size={15} /> Upload Course
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => router.push("/excelupload")}
+            className="flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-green-700 transition text-sm"
+          >
+            <span className="bg-white rounded-full p-1 ">
+              <Upload size={15} color="green" />
+            </span>{" "}
+            Upload Excel
+          </Button>
+          {/* Upload button */}
+          <Button
+            onClick={handleUpload}
+            className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-blue-700 transition text-sm"
+          >
+            <span className="bg-white rounded-full p-1 ">
+              <Plus size={15} color="blue" />
+            </span>{" "}
+            Upload Course
+          </Button>
+        </div>
       </div>
       <main className="px-6 flex-1 w-full">
         <div className="max-w-screen-xl mx-auto">

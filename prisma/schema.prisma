@@ -90,3 +90,10 @@ model Otp {
     otpHash   String
     createdAt DateTime @default(now())
 }
+
+model PasswordResetOtp {
+    id        Int      @id @default(autoincrement())
+    email     String   @unique
+    otpHash   String
+    createdAt DateTime @default(now())
+}

@@ -8,7 +8,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(req) {
   const { email, password } = await req.json();
-  const user = await prisma.user.findUnique({ where: { email } });
+
+  // Find user by email OR username
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [{ email: email }, { username: email }],
+    },
+  });
 
   // Check if user exists
   if (!user || !user.password) {
@@ -27,6 +33,17 @@ export async function POST(req) {
           "Email not verified. Please verify your email before signing in.",
         needsVerification: true,
         email: user.email,
+      },
+      { status: 403 }
+    );
+  }
+
+  if (user.role === "instructor" && user.status === "pending") {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Request pending from admin. Please wait for approval.",
+        pendingApproval: true,
       },
       { status: 403 }
     );

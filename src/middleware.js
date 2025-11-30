@@ -9,6 +9,7 @@ export async function middleware(request) {
     pathname.startsWith("/signin") ||
     pathname.startsWith("/signup") ||
     pathname.startsWith("/verifyotp") ||
+    pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/api/auth") // This should cover all auth routes
   ) {
     return NextResponse.next();

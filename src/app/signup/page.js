@@ -8,6 +8,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function SignupPage() {
   const [form, setForm] = useState({
@@ -139,7 +140,7 @@ export default function SignupPage() {
         {!showOtp ? (
           <form
             onSubmit={handleSubmit}
-            className="w-full max-w-sm space-y-3 bg-white rounded-2xl p-8"
+            className="w-full max-w-sm space-y-3 bg-white rounded-2xl p-8 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]  "
             noValidate
           >
             {/* Header */}
@@ -158,31 +159,36 @@ export default function SignupPage() {
               </div>
             )}
             {/* Role selection at the top as centered radio buttons */}
-            <div className="  flex flex-col items-center">
-              <div className="flex gap-6 justify-center">
-                <label className="flex items-center text-sm">
-                  <input
-                    type="radio"
-                    name="role"
+            <div className="flex flex-col items-center">
+              <RadioGroup
+                name="role"
+                value={form.role}
+                onValueChange={(value) => setForm({ ...form, role: value })}
+                className="flex gap-6 justify-center"
+              >
+                <label
+                  className="flex items-center text-sm"
+                  htmlFor="role-user"
+                >
+                  <RadioGroupItem
                     value="user"
-                    checked={form.role === "user"}
-                    onChange={handleChange}
-                    className="mr-1 accent-blue-500"
+                    id="role-user"
+                    className="accent-blue-500 mr-1"
                   />
                   Student
                 </label>
-                <label className="flex items-center text-sm">
-                  <input
-                    type="radio"
-                    name="role"
+                <label
+                  className="flex items-center text-sm"
+                  htmlFor="role-instructor"
+                >
+                  <RadioGroupItem
                     value="instructor"
-                    checked={form.role === "instructor"}
-                    onChange={handleChange}
-                    className="mr-1 accent-blue-500"
+                    id="role-instructor"
+                    className="accent-blue-500 mr-1"
                   />
                   Teacher
                 </label>
-              </div>
+              </RadioGroup>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-gray-700">
@@ -190,7 +196,7 @@ export default function SignupPage() {
               </label>
               <Input
                 name="username"
-                placeholder="Your name"
+                placeholder="Username"
                 value={form.username}
                 onChange={handleChange}
                 className="  "
@@ -261,7 +267,7 @@ export default function SignupPage() {
         ) : (
           <form
             onSubmit={handleVerifyOtp}
-            className="w-full max-w-sm space-y-6 bg-white rounded-2xl shadow-xl p-8"
+            className="w-full max-w-sm space-y-6 bg-white rounded-2xl shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]   p-8"
           >
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold text-gray-900 font-sans tracking-tight">

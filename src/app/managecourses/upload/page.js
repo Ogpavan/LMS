@@ -14,7 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import Loader from "@/components/Loader";
-import { useUser } from "@clerk/nextjs";
+import Confetti from "react-confetti"; // If you have a shadcn confetti component
 
 export default function UploadCourse() {
   // Refs for form fields
@@ -27,14 +27,49 @@ export default function UploadCourse() {
   const chapterSummaryRef = useRef();
   const chapterVideoRef = useRef();
   const chapterDurationRef = useRef();
-
+  const [courseTitle, setCourseTitle] = useState("");
+  const [courseDesc, setCourseDesc] = useState("");
+  const [courseInstructor, setCourseInstructor] = useState("");
+  const [courseLevel, setCourseLevel] = useState("");
+  const [courseStatus, setCourseStatus] = useState("draft");
   // State for chapters
   const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState(null);
   const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [formLoading, setFormLoading] = useState(false); // <-- for loading form data
-  const { user } = useUser();
+  const [user, setUser] = useState(null);
+  // Add state
+  const [previewImage, setPreviewImage] = useState("");
+  const [publishError, setPublishError] = useState(""); // Add this state for error
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false); // Add this state
+  const [draftSaved, setDraftSaved] = useState(false); // Add this state
+
+  // Update image preview when file changes
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file));
+    } else {
+      setPreviewImage("");
+    }
+  };
+
+  useEffect(() => {
+    // Example: get user from cookie
+    const userCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("user="));
+
+    if (userCookie) {
+      try {
+        setUser(JSON.parse(decodeURIComponent(userCookie.split("=")[1])));
+      } catch (e) {
+        setUser(null);
+      }
+    }
+  }, []);
 
   // Add chapter to list
   const handleAddChapter = (e) => {
@@ -63,15 +98,17 @@ export default function UploadCourse() {
   // Upload course to API
   const uploadCourse = async (status) => {
     setLoading(true);
+    setPublishError("");
+    setDraftSaved(false); // Reset on new save
     const data = {
-      title: titleRef.current?.value,
-      description: descRef.current?.value,
-      instructor: instructorRef.current?.value,
-      level: levelRef.current?.value,
-      thumbnail: thumbnailRef.current?.files?.[0]?.name || "",
+      title: courseTitle,
+      description: courseDesc,
+      instructor: courseInstructor,
+      level: courseLevel,
+      thumbnail: previewImage || "",
       chapters,
       status,
-      userId: user.id,
+      userId: String(user.id),
     };
     try {
       // 1. Upload image to Cloudinary
@@ -80,7 +117,7 @@ export default function UploadCourse() {
       if (file) {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", "LMSImages"); // <-- must match Cloudinary preset
+        formData.append("upload_preset", "LMSImages");
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
           {
@@ -100,17 +137,20 @@ export default function UploadCourse() {
       });
       const result = await res.json();
       if (result.success) {
-        alert(
-          `Course ${
-            status === "draft" ? "saved to draft" : "published"
-          } successfully!`
-        );
+        setPublishDialogOpen(false); // Close dialog
+        setShowConfetti(true); // Show confetti
+        setTimeout(() => setShowConfetti(false), 3000); // Hide after 3s
+        setPublishError("");
+        if (status === "draft") {
+          setDraftSaved(true); // Show green button
+          setTimeout(() => setDraftSaved(false), 2000); // Reset after 2s
+        }
         // Optionally reset form here
       } else {
-        alert("Error: " + result.error);
+        setPublishError(result.error || "Error publishing course.");
       }
     } catch (err) {
-      alert("Error: " + err.message);
+      setPublishError(err.message || "Error publishing course.");
     }
     setLoading(false);
   };
@@ -140,14 +180,14 @@ export default function UploadCourse() {
     // 2. Prepare payload
     const payload = {
       id: editId,
-      title: titleRef.current.value,
-      description: descRef.current.value,
-      instructor: instructorRef.current.value,
-      level: levelRef.current.value,
+      title: courseTitle, // use state
+      description: courseDesc,
+      instructor: courseInstructor,
+      level: courseLevel,
       thumbnail: imageUrl, // use the correct imageUrl
       chapters,
       status,
-      userId: user?.id,
+      userId: String(user?.id),
     };
 
     const res = await fetch("/api/course", {
@@ -181,17 +221,18 @@ export default function UploadCourse() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: editId,
-          title: titleRef.current.value,
-          description: descRef.current.value,
-          instructor: instructorRef.current.value,
-          level: levelRef.current.value,
-          thumbnail: thumbnailUrl,
+          title: courseTitle, // use state
+          description: courseDesc,
+          instructor: courseInstructor,
+          level: courseLevel,
+          thumbnail: thumbnailUrl, // use the correct imageUrl
           chapters,
           status: "draft",
-          userId: user?.id, // set status to draft to unpublish
+          userId: String(user?.id), // set status to draft to unpublish
         }),
       });
       setLoading(false);
+      console.log("Unpublish response:", res);
       if (res.ok) {
         alert("Course unpublished (set to draft)!");
       } else {
@@ -215,32 +256,37 @@ export default function UploadCourse() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get("id");
+
     if (courseId) {
       setFormLoading(true);
       fetch(`/api/course?id=${courseId}`)
         .then((res) => res.json())
         .then((data) => {
+          console.log(data);
           if (data.success && data.course) {
-            // Wait for refs to be available
-            setTimeout(() => {
-              if (titleRef.current) titleRef.current.value = data.course.title;
-              if (descRef.current)
-                descRef.current.value = data.course.description;
-              if (instructorRef.current)
-                instructorRef.current.value = data.course.instructor;
-              if (levelRef.current) levelRef.current.value = data.course.level;
-            }, 0);
+            // Set state for controlled fields
+            setCourseTitle(data.course.title || "");
+            setCourseDesc(data.course.description || "");
+            setCourseInstructor(data.course.instructor || "");
+            setCourseLevel(data.course.level || "");
             setChapters(data.course.chapters || []);
             setEditId(data.course.id);
-            setThumbnailUrl(data.course.thumbnail);
+            setThumbnailUrl(data.course.thumbnail || "");
+            setPreviewImage(data.course.thumbnail || "");
+            setCourseStatus(data.course.status || "draft");
           }
         })
         .finally(() => setFormLoading(false));
     }
   }, []);
 
+  // Replace Clerk user with your own logic
+
   return (
-    <div className="flex justify-center w-[90vw] mx-auto">
+    <div className="flex justify-center max-w-[90vw] mx-auto">
+      {showConfetti && (
+        <Confetti width={window.innerWidth} height={window.innerHeight} />
+      )}
       <div className="bg-gray-50 dark:bg-gray-900">
         <div className="px-4 py-12">
           {formLoading ? (
@@ -280,14 +326,25 @@ export default function UploadCourse() {
                       >
                         {loading ? "Saving..." : "Save"}
                       </Button>
-                      <Button
-                        type="button"
-                        className="rounded-full text-yellow-500 border border-yellow-500 bg-white hover:bg-yellow-500 hover:text-white"
-                        disabled={loading}
-                        onClick={unpublishCourse}
-                      >
-                        {loading ? "Unpublishing..." : "Unpublish"}
-                      </Button>
+                      {courseStatus === "draft" ? (
+                        <Button
+                          type="button"
+                          className="rounded-full bg-green-600 text-white"
+                          disabled={loading}
+                          onClick={() => saveCourse("published")}
+                        >
+                          {loading ? "Publishing..." : "Publish"}
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          className="rounded-full text-yellow-500 border border-yellow-500 bg-white hover:bg-yellow-500 hover:text-white"
+                          disabled={loading}
+                          onClick={unpublishCourse}
+                        >
+                          {loading ? "Unpublishing..." : "Unpublish"}
+                        </Button>
+                      )}
                     </>
                   ) : (
                     <>
@@ -297,14 +354,22 @@ export default function UploadCourse() {
                         disabled={loading}
                         onClick={() => uploadCourse("draft")}
                       >
-                        {loading ? "Saving..." : "Save to Draft"}
+                        {draftSaved
+                          ? "Saved"
+                          : loading
+                          ? "Saving..."
+                          : "Save to Draft"}
                       </Button>
-                      <Dialog>
+                      <Dialog
+                        open={publishDialogOpen}
+                        onOpenChange={setPublishDialogOpen}
+                      >
                         <DialogTrigger asChild>
                           <Button
                             type="button"
                             className="rounded-full bg-blue-500 hover:bg-blue-700 text-white ml-2"
                             disabled={loading}
+                            onClick={() => setPublishDialogOpen(true)}
                           >
                             Publish
                           </Button>
@@ -317,8 +382,17 @@ export default function UploadCourse() {
                               will be visible to all users.
                             </DialogDescription>
                           </DialogHeader>
+                          {publishError && (
+                            <div className="bg-red-50 border border-red-100 text-red-600 px-3 py-2 rounded-lg text-xs my-2 text-center">
+                              {publishError}
+                            </div>
+                          )}
                           <DialogFooter>
-                            <Button variant="outline" type="button">
+                            <Button
+                              variant="outline"
+                              type="button"
+                              onClick={() => setPublishDialogOpen(false)}
+                            >
                               Cancel
                             </Button>
                             <Button
@@ -351,7 +425,8 @@ export default function UploadCourse() {
                               Course Title
                             </label>
                             <Input
-                              ref={titleRef}
+                              value={courseTitle}
+                              onChange={(e) => setCourseTitle(e.target.value)}
                               className="w-full px-4 py-2 rounded-lg border border-gray-300"
                               placeholder="Enter course title"
                             />
@@ -361,7 +436,8 @@ export default function UploadCourse() {
                               Description
                             </label>
                             <textarea
-                              ref={descRef}
+                              value={courseDesc}
+                              onChange={(e) => setCourseDesc(e.target.value)}
                               rows={3}
                               className="w-full px-4 py-2 rounded-lg border border-gray-300"
                               placeholder="Enter course description"
@@ -373,7 +449,10 @@ export default function UploadCourse() {
                                 Instructor
                               </label>
                               <Input
-                                ref={instructorRef}
+                                value={courseInstructor}
+                                onChange={(e) =>
+                                  setCourseInstructor(e.target.value)
+                                }
                                 className="w-full px-4 py-2 rounded-lg border border-gray-300"
                                 placeholder="Enter instructor name"
                               />
@@ -383,9 +462,9 @@ export default function UploadCourse() {
                                 Level
                               </label>
                               <select
-                                ref={levelRef}
+                                value={courseLevel}
+                                onChange={(e) => setCourseLevel(e.target.value)}
                                 className="w-full px-4 py-2 rounded-lg border border-gray-300"
-                                defaultValue=""
                               >
                                 <option value="" disabled>
                                   Select level
@@ -406,6 +485,7 @@ export default function UploadCourse() {
                               ref={thumbnailRef}
                               type="file"
                               className="w-full px-4 py-2 rounded-lg border border-gray-300"
+                              onChange={handleThumbnailChange}
                             />
                           </div>
                         </div>
@@ -490,24 +570,33 @@ export default function UploadCourse() {
                       {/* Course Card Preview */}
                       <div className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-md">
                         <div className="relative h-48">
-                          <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                            <Upload className="h-12 w-12 text-gray-400" />
-                          </div>
+                          {previewImage ? (
+                            <img
+                              src={previewImage}
+                              alt="Course Thumbnail"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                              <Upload className="h-12 w-12 text-gray-400" />
+                            </div>
+                          )}
                           <div className="absolute top-4 left-4">
                             <span className="bg-white/90 backdrop-blur-sm text-gray-700 px-3 py-1 rounded-full text-xs font-semibold shadow">
-                              Beginner
+                              {levelRef.current?.value || "Beginner"}
                             </span>
                           </div>
                         </div>
                         <div className="p-4">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Course Title
+                            {courseTitle || "Course Title"}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                            Instructor Name
+                            {courseInstructor || "Instructor Name"}
                           </p>
                           <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                            Course description will appear here
+                            {courseDesc ||
+                              "Course description will appear here"}
                           </p>
                         </div>
                       </div>

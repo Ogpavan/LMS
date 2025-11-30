@@ -72,6 +72,7 @@ export default function SidebarNav() {
   const [collapsed, setCollapsed] = useState(true);
   const [theme, setTheme] = useState("light");
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false); // Add this state
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState({ username: "", role: "" });
@@ -100,7 +101,9 @@ export default function SidebarNav() {
   };
 
   const handleLogout = async () => {
+    setLogoutLoading(true); // Show loading
     await fetch("/api/auth/logout", { method: "POST" });
+    setLogoutLoading(false);
     router.push("/signin");
   };
 
@@ -289,6 +292,7 @@ export default function SidebarNav() {
                     variant="outline"
                     type="button"
                     onClick={() => setLogoutOpen(false)}
+                    disabled={logoutLoading}
                   >
                     Cancel
                   </Button>
@@ -296,8 +300,9 @@ export default function SidebarNav() {
                     type="button"
                     className="bg-red-600 hover:bg-red-700 text-white"
                     onClick={handleLogout}
+                    disabled={logoutLoading}
                   >
-                    Logout
+                    {logoutLoading ? "Logging out..." : "Logout"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

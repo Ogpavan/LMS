@@ -61,7 +61,7 @@ export default function InstructorsPage() {
 
   // Change instructor status
   const handleStatusChange = async (id, status) => {
-    await fetch(`/api/instructors/${id}/status`, {
+    await fetch(`/api/instructors/${id}/approve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
